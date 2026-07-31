@@ -172,7 +172,7 @@
     </div>
     <div class="field">
       <label>To (workplace)</label>
-      <input id="toInput" placeholder="Search your work address…" autocomplete="off">
+      <input id="toInput" placeholder="Search your work address (NSW)…" autocomplete="off">
       <div class="suggestions" id="toSug"></div>
     </div>
     <button class="go" id="btnGo">Plan my morning</button>
@@ -261,12 +261,15 @@ function attachAutocomplete(inputId, sugId, onPick) {
     timer = setTimeout(async () => {
       try {
         const res = await fetch(`${API}/geocode?text=${encodeURIComponent(q)}`);
-        const items = (await res.json()).slice(0, 6);
+        const items = (await res.json())
+          .filter(it => it.country === "AU" &&
+            (it.areas || []).some(a => a.name === "New South Wales"))
+          .slice(0, 6);
         sug.innerHTML = "";
         items.forEach(it => {
           const div = document.createElement("div");
-          const area = (it.areas || []).map(a => a.name).slice(0, 2).join(", ");
-          div.innerHTML = `${it.name}<small>${area}</small>`;
+          const area = (it.areas || []).filter(a => a.adminLevel > 4).map(a => a.name).slice(0, 2).join(", ") || "NSW";
+          div.innerHTML = `${it.name}<small>${area}, NSW</small>`;
           div.onclick = () => {
             input.value = it.name + (area ? ", " + area.split(",")[0] : "");
             sug.style.display = "none";
