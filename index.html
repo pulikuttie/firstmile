@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FirstMile — park, ride, arrive</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🚉</text></svg>">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
     --bg: #f4f6fb;
@@ -71,60 +70,52 @@
   }
   #status.error { color: var(--train); }
   main {
-    display: grid; gap: 18px; padding: 8px 24px 40px; max-width: 1400px; margin: 0 auto;
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: "departures commute" "map map" "parking parking";
+    display: grid; gap: 18px; padding: 8px 24px 40px; max-width: 1300px; margin: 0 auto;
+    grid-template-columns: minmax(300px, 5fr) 7fr;
   }
-  @media (max-width: 900px) {
-    main { grid-template-columns: 1fr; grid-template-areas: "commute" "departures" "map" "parking"; }
-  }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   section.card {
     background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-    padding: 18px 20px; min-width: 0;
+    padding: 18px 20px; min-width: 0; align-self: start;
   }
   section.card h2 {
     font-size: 15px; text-transform: uppercase; letter-spacing: .8px;
     color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
   }
-  #departures { grid-area: departures; }
-  #commute { grid-area: commute; }
-  #mapCard { grid-area: map; padding: 0; overflow: hidden; }
-  #parking { grid-area: parking; }
-  #map { height: 420px; width: 100%; }
   .empty { color: var(--muted); font-size: 14px; padding: 12px 0; }
 
-  /* departures */
-  .stop-group { margin-bottom: 16px; }
-  .stop-name { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .stop-name .dist { color: var(--muted); font-weight: 400; font-size: 12px; }
-  .dep-row {
-    display: flex; align-items: center; gap: 10px; padding: 8px 0;
-    border-bottom: 1px solid var(--line); font-size: 14px;
+  /* parking */
+  .park-item {
+    border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
   }
-  .dep-row:last-child { border-bottom: none; }
-  .mode-pill {
-    font-size: 11px; font-weight: 700; color: #fff; border-radius: 6px;
-    padding: 3px 8px; min-width: 46px; text-align: center; flex-shrink: 0;
+  .park-item.free-spot { border-color: #86efac; background: #f0fdf4; }
+  .park-item .p-name { font-weight: 700; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .p-badge {
+    background: #1b5eab; color: #fff; font-weight: 800; border-radius: 5px;
+    width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
   }
-  .mode-TRAIN { background: var(--train); } .mode-BUS { background: var(--bus); }
-  .mode-TRAM { background: var(--tram); } .mode-FERRY { background: var(--ferry); }
-  .headsign { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dep-time { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .dep-time.soon { color: var(--live); }
-  .delay { font-size: 11px; color: var(--train); white-space: nowrap; }
-  .delay.ontime { color: var(--live); }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%; background: var(--live);
-    display: inline-block; animation: pulse 1.6s infinite; flex-shrink: 0;
-  }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+  .park-item .p-meta { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .p-meta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .tag.free { background: #dcfce7; color: #15803d; }
+  .tag.paid { background: #fee2e2; color: #b91c1c; }
+  .tag.pr { background: #e8edff; color: #2d5bff; }
 
-  /* commute itineraries */
-  .itin { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
-  .itin.best { border-color: var(--accent); background: var(--accent-soft); }
-  .itin-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .itin-time { font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
-  .itin-dur { color: var(--muted); font-size: 13px; }
+  /* recommendations */
+  .rec {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+    position: relative;
+  }
+  .rec.best { border-color: var(--accent); background: var(--accent-soft); }
+  .rec-rank {
+    position: absolute; top: -10px; left: 14px; background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 800; border-radius: 8px; padding: 2px 9px;
+  }
+  .rec.best .rec-rank { background: #ffd166; color: #1b2b5e; }
+  .rec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .rec-time { font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .rec-dur { color: var(--muted); font-size: 13px; }
   .legs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
   .leg {
     display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
@@ -132,25 +123,13 @@
   }
   .leg .bar { width: 8px; height: 8px; border-radius: 3px; }
   .leg-arrow { color: var(--muted); font-size: 11px; }
-  .itin-note { margin-top: 6px; font-size: 12px; color: var(--muted); }
-
-  /* parking */
-  .park-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
-  .park-item {
-    border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer;
-    transition: border-color .15s;
+  .rec-park {
+    margin-top: 10px; font-size: 13px; background: #fff; border: 1px dashed #86efac;
+    border-radius: 8px; padding: 8px 10px; line-height: 1.5;
   }
-  .park-item:hover { border-color: var(--accent); }
-  .park-item .p-name { font-weight: 700; font-size: 14px; display: flex; gap: 8px; align-items: center; }
-  .p-badge {
-    background: #1b5eab; color: #fff; font-weight: 800; border-radius: 5px;
-    width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; flex-shrink: 0;
-  }
-  .park-item .p-meta { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
-  .tag { display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-right: 4px; }
-  .tag.free { background: #dcfce7; color: #15803d; }
-  .tag.paid { background: #fee2e2; color: #b91c1c; }
+  .rec-park.paid-park { border-color: #fecaca; }
+  .rec-note { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .rec-note b { color: var(--ink); }
   .refresh-note { font-size: 11px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: auto; }
   footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 24px 24px; }
   footer a { color: var(--accent); }
@@ -171,8 +150,8 @@
       <div class="suggestions" id="fromSug"></div>
     </div>
     <div class="field">
-      <label>To (workplace)</label>
-      <input id="toInput" placeholder="Search your work address (NSW)…" autocomplete="off">
+      <label>Destination</label>
+      <input id="toInput" placeholder="Where are you headed? (NSW)…" autocomplete="off">
       <div class="suggestions" id="toSug"></div>
     </div>
     <button class="go" id="btnGo">Plan my morning</button>
@@ -182,32 +161,22 @@
 <div id="status"></div>
 
 <main>
-  <section class="card" id="commute">
-    <h2>🎯 Your commute to work <span class="refresh-note" id="commuteNote"></span></h2>
-    <div id="commuteBody"><div class="empty">Set your workplace above and hit “Plan my morning”.</div></div>
-  </section>
-
-  <section class="card" id="departures">
-    <h2>🚏 Next departures near you <span class="refresh-note" id="depNote"></span></h2>
-    <div id="depBody"><div class="empty">Waiting for your location…</div></div>
-  </section>
-
-  <section class="card" id="mapCard">
-    <div id="map"></div>
-  </section>
-
   <section class="card" id="parking">
-    <h2>🅿️ Public parking nearby</h2>
+    <h2>🅿️ Public parking near you — free spots first</h2>
     <div id="parkBody"><div class="empty">Waiting for your location…</div></div>
+  </section>
+
+  <section class="card" id="recs">
+    <h2>🎯 Your 5 best ways to get there <span class="refresh-note" id="recNote"></span></h2>
+    <div id="recBody"><div class="empty">Tell me your destination above and hit “Plan my morning”.</div></div>
   </section>
 </main>
 
 <footer>
   Live transit data by <a href="https://transitous.org" target="_blank">Transitous</a> ·
-  Parking &amp; map data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors
+  Parking data © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const API = "https://api.transitous.org/api/v1";
 const OVERPASS_MIRRORS = [
@@ -218,8 +187,7 @@ const OVERPASS_MIRRORS = [
 const state = {
   from: null,           // {lat, lon, name}
   to: JSON.parse(localStorage.getItem("fm_work") || "null"),
-  map: null,
-  layers: { stops: null, parking: null, points: null, route: null },
+  parking: [],
   refreshTimer: null,
 };
 
@@ -248,9 +216,8 @@ function haversine(a, b) {
 }
 const fmtDist = m => m < 950 ? Math.round(m/10)*10 + " m" : (m/1000).toFixed(1) + " km";
 const fmtClock = iso => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-function minsUntil(iso) { return Math.round((new Date(iso) - Date.now()) / 60000); }
 
-/* ---------- geocoding + autocomplete ---------- */
+/* ---------- geocoding + autocomplete (NSW only) ---------- */
 function attachAutocomplete(inputId, sugId, onPick) {
   const input = $(inputId), sug = $(sugId);
   let timer;
@@ -271,7 +238,7 @@ function attachAutocomplete(inputId, sugId, onPick) {
           const area = (it.areas || []).filter(a => a.adminLevel > 4).map(a => a.name).slice(0, 2).join(", ") || "NSW";
           div.innerHTML = `${it.name}<small>${area}, NSW</small>`;
           div.onclick = () => {
-            input.value = it.name + (area ? ", " + area.split(",")[0] : "");
+            input.value = it.name + ", " + area.split(",")[0];
             sug.style.display = "none";
             onPick({ lat: it.lat, lon: it.lon, name: it.name });
           };
@@ -284,170 +251,18 @@ function attachAutocomplete(inputId, sugId, onPick) {
   document.addEventListener("click", e => { if (!sug.contains(e.target) && e.target !== input) sug.style.display = "none"; });
 }
 
-/* ---------- map ---------- */
-function initMap() {
-  state.map = L.map("map", { scrollWheelZoom: false }).setView([0, 0], 2);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors", maxZoom: 19,
-  }).addTo(state.map);
-  state.layers.stops = L.layerGroup().addTo(state.map);
-  state.layers.parking = L.layerGroup().addTo(state.map);
-  state.layers.points = L.layerGroup().addTo(state.map);
-  state.layers.route = L.layerGroup().addTo(state.map);
-}
-const pinIcon = (emoji, bg) => L.divIcon({
-  className: "", iconSize: [28, 28], iconAnchor: [14, 14],
-  html: `<div style="width:28px;height:28px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #fff">${emoji}</div>`,
-});
+/* ---------- parking (free spots first) ---------- */
+const feeRank = t => t.fee === "no" ? 0 : t.fee ? 2 : 1;   // free → unknown → paid
+const mapsLink = p => `https://www.google.com/maps/dir/?api=1&destination=${p.plat},${p.plon}`;
 
-function drawPoints() {
-  state.layers.points.clearLayers();
-  if (state.from) L.marker([state.from.lat, state.from.lon], { icon: pinIcon("🏠", "#2d5bff") })
-    .bindPopup("You / Home").addTo(state.layers.points);
-  if (state.to) L.marker([state.to.lat, state.to.lon], { icon: pinIcon("💼", "#16213a") })
-    .bindPopup("Work: " + state.to.name).addTo(state.layers.points);
-  if (state.from && state.to) {
-    state.map.fitBounds(L.latLngBounds([state.from.lat, state.from.lon], [state.to.lat, state.to.lon]).pad(0.25));
-  } else if (state.from) {
-    state.map.setView([state.from.lat, state.from.lon], 15);
-  }
-}
-
-/* ---------- nearby stops + departures ---------- */
-async function loadDepartures() {
-  if (!state.from) return;
-  const d = 0.008; // ~800 m box
-  const { lat, lon } = state.from;
-  try {
-    const res = await fetch(`${API}/map/stops?min=${lat - d},${lon - d}&max=${lat + d},${lon + d}`);
-    const stops = await res.json();
-    // collapse platforms/stands and duplicate feeds into one entry per station name
-    const cleanName = n => n.replace(/,?\s*(stand|platform|wharf|side|stop|bay)\s+\S+.*$/i, "").trim();
-    const byStation = new Map();
-    for (const s of stops) {
-      const key = cleanName(s.name).toLowerCase();
-      const dist = haversine(state.from, s);
-      const prev = byStation.get(key);
-      if (!prev || dist < prev.dist) byStation.set(key, { ...s, dist, displayName: cleanName(s.name) });
-    }
-    const nearest = [...byStation.values()].sort((a, b) => a.dist - b.dist).slice(0, 5);
-    if (!nearest.length) {
-      $("depBody").innerHTML = `<div class="empty">No transit stops found within ~800 m. Try a different starting point.</div>`;
-      return;
-    }
-
-    state.layers.stops.clearLayers();
-    const results = await Promise.all(nearest.map(async st => {
-      try {
-        const r = await fetch(`${API}/stoptimes?stopId=${encodeURIComponent(st.parentId || st.stopId)}&n=6`);
-        const j = await r.json();
-        return { stop: st, times: j.stopTimes || [] };
-      } catch { return { stop: st, times: [] }; }
-    }));
-
-    const html = [];
-    for (const { stop, times } of results) {
-      const seen = new Set();
-      const rows = times
-        .map(t => ({ ...t, grp: modeGroup(t.mode), mins: minsUntil(t.place.departure) }))
-        .filter(t => {
-          if (!t.grp || t.mins < 0 || t.mins >= 120) return false;
-          const k = `${t.grp}|${t.routeShortName || ""}|${t.headsign || ""}|${t.place.scheduledDeparture}`;
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        })
-        .slice(0, 4);
-      if (!rows.length) continue;
-
-      L.marker([stop.lat, stop.lon], { icon: pinIcon("🚏", "#0b8a4b") })
-        .bindPopup(`<b>${stop.name}</b><br>${fmtDist(stop.dist)} away`).addTo(state.layers.stops);
-
-      html.push(`<div class="stop-group">
-        <div class="stop-name">${stop.displayName || stop.name} <span class="dist">· ${fmtDist(stop.dist)} walk</span></div>
-        ${rows.map(t => {
-          const delayMin = Math.round((new Date(t.place.departure) - new Date(t.place.scheduledDeparture)) / 60000);
-          const delayHtml = t.realTime
-            ? (delayMin > 0 ? `<span class="delay">+${delayMin} min</span>` : `<span class="delay ontime">on time</span>`)
-            : "";
-          const route = t.routeShortName ? `<b>${t.routeShortName}</b> · ` : "";
-          return `<div class="dep-row">
-            <span class="mode-pill mode-${t.grp}">${MODE_LABEL[t.grp]}</span>
-            <span class="headsign">${route}${t.headsign || t.tripTo?.name || ""}</span>
-            ${t.realTime ? '<span class="live-dot" title="live data"></span>' : ""}
-            ${delayHtml}
-            <span class="dep-time ${t.mins <= 5 ? "soon" : ""}">${t.mins === 0 ? "now" : t.mins + " min"}</span>
-          </div>`;
-        }).join("")}
-      </div>`);
-    }
-    $("depBody").innerHTML = html.length ? html.join("") : `<div class="empty">No upcoming departures in the next 2 h from nearby stops.</div>`;
-    $("depNote").textContent = "updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch (e) {
-    $("depBody").innerHTML = `<div class="empty">Couldn't load departures (${e.message}). Will retry on next refresh.</div>`;
-  }
-}
-
-/* ---------- trip planning ---------- */
-async function loadCommute() {
-  if (!state.from || !state.to) return;
-  $("commuteBody").innerHTML = `<div class="empty">Finding the best routes…</div>`;
-  try {
-    const res = await fetch(`${API}/plan?fromPlace=${state.from.lat},${state.from.lon}&toPlace=${state.to.lat},${state.to.lon}&numItineraries=4`);
-    const j = await res.json();
-    const its = (j.itineraries || []).slice(0, 4);
-    if (!its.length) {
-      $("commuteBody").innerHTML = `<div class="empty">No transit route found between these points right now.</div>`;
-      return;
-    }
-    state.layers.route.clearLayers();
-    // draw the best itinerary's transit legs as straight guide lines
-    its[0].legs.filter(l => modeGroup(l.mode)).forEach(l => {
-      L.polyline([[l.from.lat, l.from.lon], [l.to.lat, l.to.lon]],
-        { color: MODE_COLOR[modeGroup(l.mode)] || "#2d5bff", weight: 4, opacity: .7, dashArray: "1 8" })
-        .addTo(state.layers.route);
-    });
-
-    $("commuteBody").innerHTML = its.map((it, i) => {
-      const durMin = Math.round(it.duration / 60);
-      const legs = it.legs.map(l => {
-        const grp = modeGroup(l.mode);
-        if (!grp) {
-          const walkMin = Math.max(1, Math.round(l.duration / 60));
-          return `<span class="leg"><span class="bar" style="background:${MODE_COLOR.WALK}"></span>🚶 ${walkMin}′</span>`;
-        }
-        const name = l.routeShortName || MODE_LABEL[grp];
-        return `<span class="leg" title="${l.from.name} → ${l.to.name}">
-          <span class="bar" style="background:${MODE_COLOR[grp]}"></span>${name}</span>`;
-      }).join(`<span class="leg-arrow">›</span>`);
-      const firstTransit = it.legs.find(l => modeGroup(l.mode));
-      const boardNote = firstTransit
-        ? `Board at <b>${firstTransit.from.name}</b> at <b>${fmtClock(firstTransit.startTime)}</b>`
-        : "Walking route";
-      return `<div class="itin ${i === 0 ? "best" : ""}">
-        <div class="itin-head">
-          <span class="itin-time">${fmtClock(it.startTime)} → ${fmtClock(it.endTime)}</span>
-          <span class="itin-dur">${durMin} min · ${it.transfers} transfer${it.transfers === 1 ? "" : "s"}${i === 0 ? " · ⭐ fastest" : ""}</span>
-        </div>
-        <div class="legs">${legs}</div>
-        <div class="itin-note">${boardNote} · arrive by ${fmtClock(it.endTime)}</div>
-      </div>`;
-    }).join("");
-    $("commuteNote").textContent = "leave now";
-  } catch (e) {
-    $("commuteBody").innerHTML = `<div class="empty">Couldn't plan the trip (${e.message}).</div>`;
-  }
-}
-
-/* ---------- parking ---------- */
 async function loadParking() {
   if (!state.from) return;
   $("parkBody").innerHTML = `<div class="empty">Searching for public parking…</div>`;
   const { lat, lon } = state.from;
   const q = `[out:json][timeout:20];
-    (node["amenity"="parking"](around:1200,${lat},${lon});
-     way["amenity"="parking"](around:1200,${lat},${lon}););
-    out center 40;`;
+    (node["amenity"="parking"](around:1500,${lat},${lon});
+     way["amenity"="parking"](around:1500,${lat},${lon}););
+    out center 60;`;
   try {
     let j = null;
     for (const mirror of OVERPASS_MIRRORS) {
@@ -463,57 +278,117 @@ async function loadParking() {
       } catch { /* try next mirror */ }
     }
     if (!j) throw new Error("all parking servers busy — try again in a minute");
-    const items = (j.elements || [])
+    state.parking = (j.elements || [])
       .map(el => {
         const plat = el.lat ?? el.center?.lat, plon = el.lon ?? el.center?.lon;
         return { ...el, plat, plon, tags: el.tags || {}, dist: haversine(state.from, { lat: plat, lon: plon }) };
       })
       .filter(p => p.plat && !["private", "no"].includes(p.tags.access))
-      .sort((a, b) => a.dist - b.dist)
-      .slice(0, 12);
+      .sort((a, b) => (feeRank(a.tags) - feeRank(b.tags)) || (a.dist - b.dist));
 
-    state.layers.parking.clearLayers();
+    const items = state.parking.slice(0, 12);
     if (!items.length) {
-      $("parkBody").innerHTML = `<div class="empty">No public parking mapped within 1.2 km.</div>`;
+      $("parkBody").innerHTML = `<div class="empty">No public parking mapped within 1.5 km.</div>`;
       return;
     }
-    $("parkBody").innerHTML = `<div class="park-grid">` + items.map((p, i) => {
+    $("parkBody").innerHTML = items.map(p => {
       const t = p.tags;
       const name = t.name || (t.parking ? t.parking.replace(/_/g, " ") + " parking" : "Parking area");
       const fee = t.fee === "no" ? `<span class="tag free">free</span>`
-                : t.fee === "yes" ? `<span class="tag paid">paid</span>` : "";
+                : t.fee ? `<span class="tag paid">paid</span>` : "";
+      const pr = t.park_ride && t.park_ride !== "no" ? `<span class="tag pr">🚆 Park &amp; Ride</span>` : "";
       const meta = [
         t.capacity ? `${t.capacity} spaces` : null,
         t.opening_hours || null,
-        t["park_ride"] === "yes" ? "🚆 Park & Ride" : null,
       ].filter(Boolean).join(" · ");
-      L.marker([p.plat, p.plon], { icon: pinIcon("P", "#1b5eab") })
-        .bindPopup(`<b>${name}</b><br>${fmtDist(p.dist)} away${meta ? "<br>" + meta : ""}`)
-        .addTo(state.layers.parking);
-      return `<div class="park-item" data-i="${i}">
-        <div class="p-name"><span class="p-badge">P</span>${name}</div>
-        <div class="p-meta">${fee}${fmtDist(p.dist)} away${meta ? " · " + meta : ""}</div>
+      return `<div class="park-item ${t.fee === "no" ? "free-spot" : ""}">
+        <div class="p-name"><span class="p-badge">P</span>${name} ${fee}${pr}</div>
+        <div class="p-meta">${fmtDist(p.dist)} away${meta ? " · " + meta : ""} ·
+          <a href="${mapsLink(p)}" target="_blank" rel="noopener">Directions ↗</a></div>
       </div>`;
-    }).join("") + `</div>`;
-    document.querySelectorAll(".park-item").forEach(el => {
-      el.onclick = () => {
-        const p = items[+el.dataset.i];
-        state.map.setView([p.plat, p.plon], 17);
-      };
-    });
+    }).join("");
   } catch (e) {
+    state.parking = [];
     $("parkBody").innerHTML = `<div class="empty">Couldn't load parking (${e.message}).</div>`;
   }
 }
 
+/* ---------- best car park for a boarding stop ---------- */
+function bestParkFor(stop) {
+  const nearby = state.parking
+    .map(p => ({ ...p, stopDist: haversine({ lat: p.plat, lon: p.plon }, stop) }))
+    .filter(p => p.stopDist < 900)
+    .sort((a, b) => (feeRank(a.tags) - feeRank(b.tags)) || (a.stopDist - b.stopDist));
+  return nearby[0] || null;
+}
+
+/* ---------- 5 best recommendations ---------- */
+async function loadRecs() {
+  if (!state.from || !state.to) return;
+  $("recBody").innerHTML = `<div class="empty">Finding your best options…</div>`;
+  try {
+    const res = await fetch(`${API}/plan?fromPlace=${state.from.lat},${state.from.lon}&toPlace=${state.to.lat},${state.to.lon}&numItineraries=5`);
+    const j = await res.json();
+    const its = (j.itineraries || []).slice(0, 5);
+    if (!its.length) {
+      $("recBody").innerHTML = `<div class="empty">No transit route found to ${state.to.name} right now.</div>`;
+      return;
+    }
+    $("recBody").innerHTML = its.map((it, i) => {
+      const durMin = Math.round(it.duration / 60);
+      const legs = it.legs.map(l => {
+        const grp = modeGroup(l.mode);
+        if (!grp) {
+          const walkMin = Math.max(1, Math.round(l.duration / 60));
+          return `<span class="leg"><span class="bar" style="background:${MODE_COLOR.WALK}"></span>🚶 ${walkMin}′</span>`;
+        }
+        const name = l.routeShortName || MODE_LABEL[grp];
+        return `<span class="leg" title="${l.from.name} → ${l.to.name}">
+          <span class="bar" style="background:${MODE_COLOR[grp]}"></span>${name}</span>`;
+      }).join(`<span class="leg-arrow">›</span>`);
+
+      const firstTransit = it.legs.find(l => modeGroup(l.mode));
+      const park = firstTransit ? bestParkFor(firstTransit.from) : null;
+      let parkHtml = "";
+      if (park) {
+        const t = park.tags;
+        const pname = t.name || (t.parking ? t.parking.replace(/_/g, " ") + " parking" : "parking area");
+        const feeTxt = t.fee === "no" ? `<span class="tag free">free</span>` : t.fee ? `<span class="tag paid">paid</span>` : "";
+        parkHtml = `<div class="rec-park ${t.fee === "no" ? "" : "paid-park"}">
+          🅿️ Park at <b>${pname}</b> ${feeTxt} — ${fmtDist(park.stopDist)} from ${firstTransit.from.name}
+          ${t.capacity ? ` · ${t.capacity} spaces` : ""} ·
+          <a href="${mapsLink(park)}" target="_blank" rel="noopener">Directions ↗</a>
+        </div>`;
+      } else if (firstTransit) {
+        parkHtml = `<div class="rec-park paid-park">🅿️ No public car park mapped within 900 m of ${firstTransit.from.name} — consider street parking.</div>`;
+      }
+      const boardNote = firstTransit
+        ? `Board <b>${firstTransit.routeShortName || MODE_LABEL[modeGroup(firstTransit.mode)]}</b> at <b>${firstTransit.from.name}</b> at <b>${fmtClock(firstTransit.startTime)}</b>`
+        : "Walking the whole way";
+      return `<div class="rec ${i === 0 ? "best" : ""}">
+        <span class="rec-rank">${i === 0 ? "⭐ BEST" : "#" + (i + 1)}</span>
+        <div class="rec-head">
+          <span class="rec-time">${fmtClock(it.startTime)} → ${fmtClock(it.endTime)}</span>
+          <span class="rec-dur">${durMin} min · ${it.transfers} transfer${it.transfers === 1 ? "" : "s"}</span>
+        </div>
+        <div class="legs">${legs}</div>
+        ${parkHtml}
+        <div class="rec-note">${boardNote} · arrive by <b>${fmtClock(it.endTime)}</b></div>
+      </div>`;
+    }).join("");
+    $("recNote").textContent = "updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    $("recBody").innerHTML = `<div class="empty">Couldn't plan the trip (${e.message}).</div>`;
+  }
+}
+
 /* ---------- orchestration ---------- */
-function refreshAll() {
-  drawPoints();
-  loadDepartures();
-  loadParking();
-  loadCommute();
+async function refreshAll() {
+  await loadParking();          // parking first — recommendations use it
+  if (state.to) loadRecs();
+  else { $("toInput").focus(); setStatus("Where are you headed? Type your destination to get your 5 best options."); }
   clearInterval(state.refreshTimer);
-  state.refreshTimer = setInterval(loadDepartures, 60000); // live board refresh
+  state.refreshTimer = setInterval(loadRecs, 60000);  // keep departure times fresh
 }
 
 // NSW bounding box (also covers the ACT, which sits inside it)
@@ -545,17 +420,17 @@ function useGeolocation() {
   );
 }
 
-initMap();
 attachAutocomplete("fromInput", "fromSug", place => { state.from = place; refreshAll(); });
 attachAutocomplete("toInput", "toSug", place => {
   state.to = place;
   localStorage.setItem("fm_work", JSON.stringify(place));
-  drawPoints();
+  setStatus("");
+  if (state.from) loadRecs();
 });
 $("btnLocate").onclick = useGeolocation;
 $("btnGo").onclick = () => {
   if (!state.from) { setStatus("Set a starting point first (or tap 📍 My location).", true); return; }
-  if (!state.to) { setStatus("Set your workplace first.", true); return; }
+  if (!state.to) { setStatus("Type your destination first.", true); $("toInput").focus(); return; }
   refreshAll();
 };
 if (state.to) $("toInput").value = state.to.name;

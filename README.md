@@ -12,13 +12,14 @@ know where to leave the car.
 ## Features
 
 - 📍 One-tap geolocation, or search any starting point
-- 🚏 Live departure board for every stop within ~800 m, auto-refreshing each minute
-- 🎯 Door-to-door itineraries to work with boarding times; your workplace is remembered
-- 🅿️ Public parking within 1.2 km — free/paid, capacity, opening hours, park & ride
-- 🗺️ Everything on an interactive map
+- 🅿️ Public parking near you, free spots first — capacity, hours, and driving directions
+- 🎯 Your 5 best ways to get there, ranked — each pairs the transit route (boarding stop,
+  time, arrival) with the best car park at the boarding station, refreshed every minute
+- 📍 One-tap geolocation; your destination is remembered for next time
+- 🌏 NSW, Australia only (addresses and location are geo-fenced)
 
-Works worldwide — no API keys. Live transit data by [Transitous](https://transitous.org),
-parking & maps © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.
+No API keys. Live transit data by [Transitous](https://transitous.org),
+parking data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.
 
 ## Run locally
 
