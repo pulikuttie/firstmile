@@ -516,17 +516,31 @@ function refreshAll() {
   state.refreshTimer = setInterval(loadDepartures, 60000); // live board refresh
 }
 
+// NSW bounding box (also covers the ACT, which sits inside it)
+const inNSW = (lat, lon) => lat >= -37.6 && lat <= -28.1 && lon >= 140.99 && lon <= 153.64;
+
 function useGeolocation() {
   if (!navigator.geolocation) { setStatus("Geolocation isn't available — type your starting point instead.", true); return; }
   setStatus("Locating you…");
   navigator.geolocation.getCurrentPosition(
     pos => {
-      state.from = { lat: pos.coords.latitude, lon: pos.coords.longitude, name: "My location" };
+      const { latitude: lat, longitude: lon } = pos.coords;
+      if (!inNSW(lat, lon)) {
+        setStatus("You appear to be outside New South Wales — FirstMile covers NSW only. Type a NSW starting point instead.", true);
+        return;
+      }
+      state.from = { lat, lon, name: "My location" };
       $("fromInput").value = "📍 My current location";
       setStatus("");
       refreshAll();
     },
-    err => setStatus("Couldn't get your location (" + err.message + "). Type a starting point instead.", true),
+    err => {
+      if (err.code === err.PERMISSION_DENIED) {
+        setStatus("Location access is blocked. To fix: tap the 🔒/⚙️ icon next to the address bar → Site settings → Location → Allow, then reload. On iPhone also check Settings → Privacy & Security → Location Services → Safari Websites → While Using. Or just type a starting point instead.", true);
+      } else {
+        setStatus("Couldn't get your location (" + err.message + "). Type a starting point instead.", true);
+      }
+    },
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
